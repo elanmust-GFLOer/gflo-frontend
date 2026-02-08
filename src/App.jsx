@@ -3,6 +3,14 @@ import './App.css'
 
 function App() {
   const [metadata, setMetadata] = useState(null);
+  const [aiStatus, setAiStatus] = useState("Kapcsolódás...");
+
+  useEffect(() => {
+    fetch('https://6cd801e446530023-188-190-101-7.serveousercontent.com/stats')
+      .then(res => res.json())
+      .then(data => setAiStatus(data.status))
+      .catch(() => setAiStatus("Offline"));
+  }, []);
 
   useEffect(() => {
     // Beolvassuk a metadata fájlt, amit az előbb másoltál be
