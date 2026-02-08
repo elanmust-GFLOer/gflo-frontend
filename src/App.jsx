@@ -19,11 +19,12 @@ function App() {
       .then(data => setMetadata(data));
   }, []);
 
-  return (
+    return (
     <div className="dashboard">
       <header>
         <h1>GFLOer Dashboard 🌐</h1>
-        <div className="status-badge">Network: Sepolia L2 <div className="status-badge">AI Core: {aiStatus}</div>
+        <div className="status-badge">Network: Sepolia L2</div>
+        <div className="status-badge">AI Core: {aiStatus}</div>
       </header>
 
       <main>
@@ -32,7 +33,7 @@ function App() {
             <div className="card-image-placeholder">🎨 Genesis #1</div>
             <h2>{metadata.name}</h2>
             <p className="description">{metadata.description}</p>
-
+            
             <div className="traits">
               {metadata.attributes.map((attr, i) => (
                 <div key={i} className="trait">
@@ -51,7 +52,7 @@ function App() {
         <button className="connect-btn">Connect Wallet (Wagmi)</button>
       </footer>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
