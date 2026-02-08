@@ -23,7 +23,7 @@ function App() {
     <div className="dashboard">
       <header>
         <h1>GFLOer Dashboard 🌐</h1>
-        <div className="status-badge">Network: Sepolia L2</div>
+        <div className="status-badge">Network: Sepolia L2 <div className="status-badge">AI Core: {aiStatus}</div>
       </header>
 
       <main>
