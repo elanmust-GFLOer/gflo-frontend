@@ -1,28 +1,32 @@
-import { useState, useEffect } from 'react';
-import './App.css';
+import React from 'react'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { WagmiProvider } from 'wagmi'
+import { Dashboard } from './components/Dashboard'
+import './index.css'
+
+// Egyszerű Web3 konfig (demo módban)
+import { createConfig, http } from 'wagmi'
+import { base } from 'wagmi/chains'
+import { injected } from 'wagmi/connectors'
+
+const config = createConfig({
+  chains: [base],
+  transports: {
+    [base.id]: http('https://mainnet.base.org'),
+  },
+  connectors: [injected()]
+})
+
+const queryClient = new QueryClient()
 
 function App() {
-  const [aiStatus, setAiStatus] = useState("Kapcsolódás...");
-
-  useEffect(() => {
-    //f74f3ed7b8dc11c1-188-190-101-7.serveousercontent.com
-           fetch('https://f74f3ed7b8dc11c1-188-190-101-7.serveousercontent.com/stats')
-      .then(res => res.json())
-      .then(data => setAiStatus(data.status))
-      .catch(() => setAiStatus("Offline 🛑"));
-  }, []);
-
   return (
-    <div className="dashboard">
-      <header>
-        <h1>GFLOer Dashboard 🌐</h1>
-        <div className="status-badge">AI Core: {aiStatus}</div>
-      </header>
-      <main>
-        <p>A rendszer online, az adatok betöltése folyamatban...</p>
-      </main>
-    </div>
-  );
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <Dashboard />
+      </QueryClientProvider>
+    </WagmiProvider>
+  )
 }
 
-export default App; 
+export default App
