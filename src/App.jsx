@@ -5,7 +5,7 @@ function App() {
   const [aiStatus, setAiStatus] = useState("Kapcsolódás...");
 
   useEffect(() => {
-    fetch('https://dfb9927d653ae845-85-237-234-219.serveousercontent.com') 
+    fetch('https://dfb9927d653ae845-85-237-234-219.serveousercontent.com/stats') 
       .then(res => res.json())
       .then(data => setAiStatus(data.status))
       .catch(() => setAiStatus("Offline"));
