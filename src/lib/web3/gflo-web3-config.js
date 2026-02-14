@@ -12,12 +12,11 @@ export const GFLO_CONTRACTS = {
   reformer: '0x...', // ReformerModule
   
   // Sepolia Testnet
-  sepolia: {
-    token: '0x...',
-    registry: '0x...',
-    sovereign: '0x...'
-  }
-}
+    sepolia: {
+      token: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+      registry: '0x5FbDB2315678afecb367f032d93F642f64180aa3',
+      sovereign: '0x5FbDB2315678afecb367f032d93F642f64180aa3'
+    }
 
 // GFLO ABI-k (ide másolhatod a compiled JSON-ből)
 export const GFLO_ABIS = {
