@@ -27,8 +27,8 @@ export const GFLO_ABIS = {
 
 // RPC URL-ek
 export const RPC_URLS = {
-  base: import.meta.env.VITE_BASE_RPC_URL || 'https://mainnet.base.org',
-  baseSepolia: import.meta.env.VITE_BASE_SEPOLIA_RPC_URL || 'https://sepolia.base.org'
+  base: 'https://mainnet.base.org',
+  baseSepolia: 'https://sepolia.infura.io/v3/52c5b898077a4686becc8db02ba0bfc5' 
 }
 
 // Wagmi konfiguráció GFLO-hoz

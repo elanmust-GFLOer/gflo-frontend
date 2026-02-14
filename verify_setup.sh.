@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Színek a lelki nyugalomért
+GREEN='\033[0;32m'
+RED='\033[0;31m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
+echo -e "${CYAN}--- GFLO Sovereign Rendszerellenőrzés Indítása ---${NC}"
+
+# 1. Mappa struktúra ellenőrzése
+echo -e "\n${CYAN}[1/4] Mappák ellenőrzése...${NC}"
+mkdir -p contracts/interfaces contracts/registry
+echo -e "${GREEN}✓ Mappa struktúra kész.${NC}"
+
+# 2. Hardhat konfiguráció javítása
+echo -e "\n${CYAN}[2/4] Konfiguráció ellenőrzése...${NC}"
+if [ -f "hardhat.config.js" ]; then
+    mv hardhat.config.js hardhat.config.cjs
+    echo -e "${GREEN}✓ hardhat.config.js átnevezve .cjs-re (ES modul javítás).${NC}"
+elif [ -f "hardhat.config.cjs" ]; then
+    echo -e "${GREEN}✓ hardhat.config.cjs már a helyén van.${NC}"
+else
+    echo -e "${RED}✗ Hardhat konfiguráció nem található!${NC}"
+fi
+
+# 3. Függőségek "gyógyítása" (Node 25 kényszerítés)
+echo -e "\n${CYAN}[3/4] Függőségek szinkronizálása (ez eltarthat egy percig)...${NC}"
+npm install --save-dev @nomicfoundation/hardhat-toolbox --legacy-peer-deps --force
+echo -e "${GREEN}✓ Függőségek kényszerítve telepítve.${NC}"
+
+# 4. Fordítási próba
+echo -e "\n${CYAN}[4/4] Fordítás indítása...${NC}"
+npx hardhat --config hardhat.config.cjs compile
+
+echo -e "\n${CYAN}--- Ellenőrzés vége ---${NC}"
