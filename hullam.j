@@ -1,0 +1,3 @@
+CONTRACT_ADDRESS:0x563b2e3b499818a2f84c472efb3169a2667807fe
+INFURA_URL:https://sepolia.infura.io/v3/52c5b898077a4686becc8db02ba0bfc5
+
