@@ -21,7 +21,7 @@ export default function ElanMustAI() {
 
     try {
       // Call Flask API
-      const res = await fetch('http://localhost:5000/api/ai/chat', {
+      const res = await fetch('https://web-gflo-sov-f4a65.up.railway.app/api/ai/chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })
