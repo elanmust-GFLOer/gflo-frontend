@@ -1,111 +1,102 @@
-import React, { useState, useEffect } from 'react'
-import { useAccount, useConnect } from 'wagmi'
-import { GFLOPhilosophy } from './GFLOPhilosophy'
+import React, { useState } from 'react'
+import { useAccount, useConnect, useReadContract } from 'wagmi'
+import { GFLO_CONTRACTS, GFLO_ABIS } from '../lib/web3/gflo-web3-config'
 
 export function Dashboard() {
   const { address, isConnected } = useAccount()
-  const { connectors, connect } = useConnect()
-  const [aiStatus, setAiStatus] = useState('checking')
-  
-  useEffect(() => {
-    // Szimulált AI kapcsolat ellenőrzés
-    setTimeout(() => {
-      setAiStatus('demo')
-    }, 1000)
-  }, [])
-  
+  const { connectors, connect, error: connectError } = useConnect()
+  const [debug, setDebug] = useState('')
+
   const handleConnect = () => {
-    if (connectors[0]) {
+    setDebug('Connectors: ' + connectors.length)
+    if (connectors.length > 0) {
       connect({ connector: connectors[0] })
+    } else {
+      setDebug('Nincs connector! Telepítsd a MetaMask-ot.')
     }
   }
-  
+
+  const { data: xpRaw } = useReadContract({
+    address: GFLO_CONTRACTS.pieCore,
+    abi: GFLO_ABIS.pieCore,
+    functionName: 'getXP',
+    args: [address],
+    query: { enabled: !!address }
+  })
+
+  const { data: tierRaw } = useReadContract({
+    address: GFLO_CONTRACTS.pieCore,
+    abi: GFLO_ABIS.pieCore,
+    functionName: 'getTier',
+    args: [address],
+    query: { enabled: !!address }
+  })
+
+  const { data: balanceRaw } = useReadContract({
+    address: GFLO_CONTRACTS.token,
+    abi: GFLO_ABIS.token,
+    functionName: 'balanceOf',
+    args: [address],
+    query: { enabled: !!address }
+  })
+
+  const xp = xpRaw ? Number(xpRaw) / 1e18 : 0
+  const tier = tierRaw ? Number(tierRaw) : 0
+  const balance = balanceRaw ? Number(balanceRaw) / 1e18 : 0
+  const paths = ['—', 'Sovereign', 'Reformer', 'Praxis']
+
+  if (!isConnected) return (
+    <div style={{minHeight:'100vh',background:'#0a0a0f',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <div style={{textAlign:'center',padding:'2rem',border:'1px solid #2563eb44',borderRadius:'1rem',background:'#ffffff08',maxWidth:'320px'}}>
+        <div style={{fontSize:'3rem',marginBottom:'1rem'}}>🦾</div>
+        <h1 style={{color:'white',fontSize:'1.8rem',fontWeight:'bold',marginBottom:'0.5rem'}}>GFLO Sovereign</h1>
+        <p style={{color:'#9ca3af',marginBottom:'0.5rem'}}>Sovereign AI-Web3 Ecosystem</p>
+        <p style={{color:'#6b7280',fontSize:'0.75rem',marginBottom:'1.5rem'}}>
+          Connectors: {connectors.length} | {connectors.map(c => c.name).join(', ') || 'nincs'}
+        </p>
+        <button onClick={handleConnect}
+          style={{padding:'0.75rem 2rem',background:'linear-gradient(135deg,#2563eb,#7c3aed)',color:'white',border:'none',borderRadius:'0.75rem',fontSize:'1rem',fontWeight:'600',cursor:'pointer',width:'100%'}}>
+          Connect Wallet
+        </button>
+        {debug && <p style={{color:'#f59e0b',marginTop:'0.5rem',fontSize:'0.8rem'}}>{debug}</p>}
+        {connectError && <p style={{color:'#ef4444',marginTop:'0.5rem',fontSize:'0.8rem'}}>{connectError.message}</p>}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 to-black text-white p-4">
-      {/* Fejléc */}
-      <header className="max-w-6xl mx-auto mb-8">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              🦾 GFLO_Sovereign
-            </h1>
-            <p className="text-gray-400">Sovereign AI-Web3 Ecosystem</p>
+    <div style={{minHeight:'100vh',background:'#0a0a0f',color:'white',padding:'1.5rem',fontFamily:'Inter,sans-serif'}}>
+      <div style={{maxWidth:'800px',margin:'0 auto'}}>
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'2rem'}}>
+          <h1 style={{fontSize:'1.8rem',fontWeight:'bold',background:'linear-gradient(90deg,#60a5fa,#a78bfa)',WebkitBackgroundClip:'text',WebkitTextFillColor:'transparent',margin:0}}>
+            🦾 GFLO Sovereign
+          </h1>
+          <div style={{padding:'0.5rem 1rem',background:'#ffffff0a',borderRadius:'2rem',border:'1px solid #ffffff15',fontSize:'0.8rem',color:'#9ca3af'}}>
+            ● {address?.slice(0,6)}...{address?.slice(-4)}
           </div>
-          
-          <div className="flex items-center gap-4">
-            {isConnected ? (
-              <div className="flex items-center gap-2 px-4 py-2 bg-black/40 rounded-xl">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
-                <span className="text-sm">{address?.slice(0, 6)}...{address?.slice(-4)}</span>
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1rem',marginBottom:'1.5rem'}}>
+          {[
+            {label:'XP',value:xp.toLocaleString(),color:'#60a5fa',icon:'🧬',sub:'merit'},
+            {label:'Tier',value:`Tier ${tier}`,color:'#a78bfa',icon:'👑',sub:paths[tier]||'—'},
+            {label:'GFLO',value:balance.toFixed(2),color:'#34d399',icon:'🪙',sub:'balance'},
+          ].map(c => (
+            <div key={c.label} style={{padding:'1.25rem',borderRadius:'1rem',background:'#ffffff06',border:`1px solid ${c.color}22`}}>
+              <div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.5rem'}}>
+                <span style={{fontWeight:'600',fontSize:'0.9rem'}}>{c.label}</span>
+                <span>{c.icon}</span>
               </div>
-            ) : (
-              <button
-                onClick={handleConnect}
-                className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl font-semibold hover:opacity-90 transition"
-              >
-                Connect Wallet
-              </button>
-            )}
-          </div>
-        </div>
-      </header>
-      
-      {/* Fő tartalom */}
-      <main className="max-w-6xl mx-auto">
-        {/* AI Status */}
-        <div className="mb-8 p-6 rounded-2xl bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/30">
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`w-3 h-3 rounded-full ${aiStatus === 'connected' ? 'bg-green-500' : 'bg-yellow-500 animate-pulse'}`} />
-            <h2 className="text-xl font-bold">🤖 AI Guardian</h2>
-          </div>
-          <p className="text-gray-300">
-            {aiStatus === 'connected' 
-              ? 'AI Oracle is actively monitoring and optimizing' 
-              : 'Running in demo mode - connect to backend for full functionality'}
-          </p>
-        </div>
-        
-        {/* GFLO Philosophy Components */}
-        <GFLOPhilosophy />
-        
-        {/* Token Balance (Demo) */}
-        <div className="mt-8 p-6 rounded-2xl bg-black/40 border border-gray-800">
-          <h3 className="text-xl font-bold mb-4">💰 GFLO Token</h3>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 bg-black/60 rounded-xl">
-              <p className="text-gray-400">Your Balance</p>
-              <p className="text-2xl font-bold text-green-400">0.00 GFLO</p>
+              <div style={{fontSize:'1.5rem',fontWeight:'bold',color:c.color}}>{c.value}</div>
+              <div style={{fontSize:'0.75rem',color:'#6b7280',marginTop:'0.25rem'}}>{c.sub}</div>
             </div>
-            <div className="p-4 bg-black/60 rounded-xl">
-              <p className="text-gray-400">Total XP</p>
-              <p className="text-2xl font-bold text-yellow-400">0 XP</p>
-            </div>
-            <div className="p-4 bg-black/60 rounded-xl">
-              <p className="text-gray-400">Sovereign Level</p>
-              <p className="text-2xl font-bold text-blue-400">Level 1</p>
-            </div>
-          </div>
+          ))}
         </div>
-        
-        {/* Action Buttons */}
-        <div className="mt-8 flex gap-4">
-          <button className="flex-1 py-4 bg-gradient-to-r from-blue-600 to-blue-700 rounded-xl font-semibold hover:opacity-90 transition">
-            🛣️ Create UserPath
-          </button>
-          <button className="flex-1 py-4 bg-gradient-to-r from-purple-600 to-purple-700 rounded-xl font-semibold hover:opacity-90 transition">
-            ⛽ Optimize Gas
-          </button>
-          <button className="flex-1 py-4 bg-gradient-to-r from-green-600 to-green-700 rounded-xl font-semibold hover:opacity-90 transition">
-            📊 View Analytics
-          </button>
+
+        <div style={{textAlign:'center',color:'#4b5563',fontSize:'0.8rem',fontStyle:'italic',paddingTop:'1rem',borderTop:'1px solid #ffffff08'}}>
+          "Become who you are." – Nietzsche
         </div>
-      </main>
-      
-      {/* Lábléc */}
-      <footer className="max-w-6xl mx-auto mt-12 pt-6 border-t border-gray-800 text-center text-gray-500 text-sm">
-        <p>GFLO_Sovereign v1.0.0 • Built with ❤️ for the decentralized future</p>
-        <p className="mt-2">Backend: {import.meta.env.VITE_GFLO_BACKEND_URL || 'Not connected'}</p>
-      </footer>
+      </div>
     </div>
   )
 }

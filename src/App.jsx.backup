@@ -1,0 +1,63 @@
+import React, { useState, useEffect } from 'react';
+
+function App() {
+  const [step, setStep] = useState(0);
+  const [history, setHistory] = useState([]);
+  const [currentQuestion, setCurrentQuestion] = useState("");
+  const [inputValue, setInputValue] = useState("");
+
+  // Első kérdés lekérése indításkor
+  useEffect(() => {
+    fetchQuestion(0);
+  }, []);
+
+  const fetchQuestion = async (nextStep, answer = "") => {
+    // Küldjük el a jelenlegi választ és a lépés számát a Flask-nek
+    const response = await fetch('http://localhost:5000/api/flowkeeper/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ step: nextStep, answer: answer })
+    });
+    const data = await response.json();
+    
+    if (data.question) {
+      // Ha van új kérdés, frissítjük a kijelzőt és ugrunk a következő indexre
+      setCurrentQuestion(data.question);
+      setStep(data.next_step); // A backend mondja meg, mi a köv. szám!
+    } else if (data.is_final) {
+      // Ha végére értünk a 12 kérdésnek
+      setCurrentQuestion(data.message);
+    }
+  };
+
+  const handleSend = () => {
+    setHistory([...history, { type: 'user', text: inputValue }, { type: 'bot', text: currentQuestion }]);
+    fetchQuestion(step, inputValue);
+    setInputValue("");
+  };
+
+  return (
+    <div style={{ backgroundColor: '#000', color: '#0f0', height: '100vh', padding: '20px', fontFamily: 'monospace' }}>
+      <h1>🌐 GFLO Flowkeeper</h1>
+      <div style={{ height: '70%', overflowY: 'auto', border: '1px solid #333', padding: '10px', marginBottom: '10px' }}>
+        {history.map((msg, i) => (
+          <div key={i} style={{ textAlign: msg.type === 'user' ? 'right' : 'left', margin: '10px 0' }}>
+            <span style={{ background: msg.type === 'user' ? '#003300' : '#111', padding: '5px 10px', borderRadius: '5px' }}>
+              {msg.text}
+            </span>
+          </div>
+        ))}
+        <div style={{ color: '#fff' }}>{currentQuestion}</div>
+      </div>
+      <input 
+        value={inputValue} 
+        onChange={(e) => setInputValue(e.target.value)}
+        style={{ width: '80%', background: '#111', color: '#fff', border: '1px solid #0f0', padding: '10px' }}
+        placeholder="Írd ide a válaszod..."
+      />
+      <button onClick={handleSend} style={{ width: '18%', padding: '10px', background: '#0f0', cursor: 'pointer' }}>KÜLDÉS</button>
+    </div>
+  );
+}
+
+export default App;
