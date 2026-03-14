@@ -42,7 +42,7 @@ export default function ElanMustAI() {
   };
 
   return (
-    <div className="min-h-screen bg-black text-green-400 font-mono p-4">
+    <div className="min-h-screen bg-gray-900 text-green-400 font-mono p-4">
       <h1 className="text-2xl mb-4">🌳 ElanMust.AI - GFLO Flowkeeper</h1>
       
       {/* Chat messages */}
