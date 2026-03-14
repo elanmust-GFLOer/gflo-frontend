@@ -43,7 +43,7 @@ export default function ElanMustAI() {
 
   return (
     <div className="min-h-screen bg-gray-900 text-green-400 font-mono p-4">
-      <h1 className="text-2xl mb-4">🌳 ElanMust.AI - GFLO Flowkeeper</h1>
+      <h1 className="text-2xl mb-4 text-green-400">🌳 ElanMust.AI - GFLO Flowkeeper</h1>
       
       {/* Chat messages */}
       <div className="space-y-4 mb-4 h-[70vh] overflow-y-auto">
