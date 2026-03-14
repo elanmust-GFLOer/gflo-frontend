@@ -48,7 +48,7 @@ export default function ElanMustAI() {
       {/* Chat messages */}
       <div className="space-y-4 mb-4 h-[70vh] overflow-y-auto">
         {messages.map((msg, i) => (
-          <div key={i} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
+          <div key={i} style={{color: "white"}} className={msg.role === 'user' ? 'text-right' : 'text-left'}>
             <span className={msg.role === 'user' ? 'text-cyan-400' : 'text-green-400'}>
               {msg.role === 'user' ? 'Te: ' : 'AI: '}
             </span>
