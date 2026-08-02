@@ -1,6 +1,7 @@
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { gfloWagmiConfig } from './lib/web3/gflo-web3-config'
 import { Dashboard } from './components/Dashboard'
 import ElanMustAI from './components/ElanMustAI'
@@ -17,6 +18,7 @@ function App() {
             <Route path="/ai" element={<ElanMustAI />} />
           </Routes>
         </BrowserRouter>
+        <Analytics />
       </QueryClientProvider>
     </WagmiProvider>
   )
