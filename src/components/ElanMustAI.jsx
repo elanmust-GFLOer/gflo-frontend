@@ -10,6 +10,8 @@ export default function ElanMustAI() {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
 
+  const AI_URL = import.meta.env.VITE_AI_URL || 'https://web-gflo-sov-f4a65.up.railway.app';
+
   const sendMessage = async () => {
     if (!input.trim()) return;
 
@@ -20,8 +22,8 @@ export default function ElanMustAI() {
     setLoading(true);
 
     try {
-      // Call Flask API
-      const res = await fetch('https://web-gflo-sov-f4a65.up.railway.app/api/ai/chat', {
+      // Call AI API (uses VITE_AI_URL if provided)
+      const res = await fetch(`${AI_URL}/api/ai/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ message: input })

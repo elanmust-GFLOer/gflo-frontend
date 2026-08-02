@@ -7,7 +7,9 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:gasFeeLoop:localhost": "hardhat run scripts/deploy-gasFeeLoop.js --network localhost",
+    "deploy:gasFeeLoop:hardhat": "hardhat run scripts/deploy-gasFeeLoop.js --network hardhat"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.2.1",
