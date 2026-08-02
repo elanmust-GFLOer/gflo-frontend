@@ -100,17 +100,29 @@ def optimize_gas():
         'recommendation': 'Execute now for optimal savings'
     })
 
-if __name__ == '__main__':
-    print("🚀 GFLO Backend starting on http://localhost:5000")
-    print("📡 API Endpoints:")
-    print("  • GET  /api/status")
-    print("  • GET  /ai/oracle")
-    print("  • GET  /api/paths/<address>")
-    print("  • POST /api/paths/create")
-    print("  • GET  /api/xp/<address>")
-    print("  • POST /api/gas/optimize")
-    print("\n🔗 Frontend: http://localhost:5173")
-    app.run(host='0.0.0.0', port=5000, debug=True)
+# Új: egyszerű /api/ai/chat végpont a frontendhez (lokális használatra)
+@app.route('/api/ai/chat', methods=['POST'])
+def api_ai_chat():
+    """Egyszerű AI chat endpoint – a frontend POST-ol ide.
+
+    Visszaad egy egyszerű, helyi (mock) választ. Később ide köthető egy valódi AI szolgáltatás.
+    """
+    data = request.get_json() or {}
+    message = data.get('message', '')
+
+    if not message or not message.strip():
+        response_text = "Kérlek írj valamit a chatbe."
+    else:
+        # Egyszerű heurisztiák / példa válasz
+        if 'mentor' in message.lower():
+            response_text = "(Mentor) Gondolkodj el az etikai következményeken. Mit szeretnél tanulni ma?"
+        elif 'exploit' in message.lower() or 'fraud' in message.lower():
+            response_text = "(Guardian) Észlelés: potenciális veszély. Javasolt akció: tranzakció leállítása és manuális ellenőrzés."
+        else:
+            response_text = f"AI válasz (lokális): Megkaptam az üzeneted: '{message}'. Gondolkodj el rajta és kérdezz tovább."
+
+    return jsonify({'response': response_text})
+
 
 # ======================
 # GFLO SZIMBIÓZIS API-k
@@ -200,3 +212,17 @@ def ai_guardian():
         'regeneration_allocation': '0.01 ETH to Green Treasury',
         'message': "A rossz szándék energiáját a fizikai világ regenerációjára fordítjuk."
     })
+
+
+if __name__ == '__main__':
+    print("🚀 GFLO Backend starting on http://localhost:5000")
+    print("📡 API Endpoints:")
+    print("  • GET  /api/status")
+    print("  • GET  /ai/oracle")
+    print("  • GET  /api/paths/<address>")
+    print("  • POST /api/paths/create")
+    print("  • GET  /api/xp/<address>")
+    print("  • POST /api/gas/optimize")
+    print("  • POST /api/ai/chat  (lokális)")
+    print("\n🔗 Frontend: http://localhost:5173")
+    app.run(host='0.0.0.0', port=5000, debug=True)
