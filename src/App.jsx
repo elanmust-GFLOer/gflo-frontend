@@ -1,6 +1,7 @@
 import { WagmiProvider } from 'wagmi'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { SpeedInsights } from '@vercel/speed-insights/react'
 import { gfloWagmiConfig } from './lib/web3/gflo-web3-config'
 import { Dashboard } from './components/Dashboard'
 import ElanMustAI from './components/ElanMustAI'
@@ -18,6 +19,7 @@ function App() {
           </Routes>
         </BrowserRouter>
       </QueryClientProvider>
+      <SpeedInsights />
     </WagmiProvider>
   )
 }
