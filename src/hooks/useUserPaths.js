@@ -1,53 +1,44 @@
-import { useReadContract, useWriteContract, useAccount } from 'wagmi'
+import { useReadContract, useAccount } from 'wagmi'
 import { GFLO_CONTRACTS, GFLO_ABIS, GFLO_CHAIN_ID } from '../lib/web3/gflo-web3-config'
 
 export function useUserPaths() {
   const { address } = useAccount()
-  const registryAddress = GFLO_CONTRACTS.registry
+  // A registry nincs konfigurálva itt; helyette a pieCore kontraktusból kérünk XP/tier információt.
+  const pieCoreAddress = GFLO_CONTRACTS.pieCore
 
-  // UserPath-ek lekérdezése
-  const { data: userPaths, refetch: refetchPaths } = useReadContract({
-    address: registryAddress,
-    abi: GFLO_ABIS.registry,
-    functionName: 'getUserPaths',
+  const { data: xpRaw } = useReadContract({
+    address: pieCoreAddress,
+    abi: GFLO_ABIS.pieCore,
+    functionName: 'getXP',
     args: [address],
     chainId: GFLO_CHAIN_ID,
-    query: {
-      enabled: !!address
-    }
+    query: { enabled: !!address }
   })
 
-  // Új UserPath létrehozása
-  const { writeContract: createPath, isPending: isCreating } = useWriteContract()
+  const { data: tierRaw } = useReadContract({
+    address: pieCoreAddress,
+    abi: GFLO_ABIS.pieCore,
+    functionName: 'getTier',
+    args: [address],
+    chainId: GFLO_CHAIN_ID,
+    query: { enabled: !!address }
+  })
 
-  const createUserPath = async (pathName, metadata) => {
-    return createPath({
-      address: registryAddress,
-      abi: GFLO_ABIS.registry,
-      functionName: 'createUserPath',
-      args: [pathName, JSON.stringify(metadata)],
-      chainId: GFLO_CHAIN_ID
-    })
+  const xp = xpRaw ? Number(xpRaw) / 1e18 : 0
+  const tier = tierRaw ? Number(tierRaw) : 0
+
+  // Ha a registry később hozzáadódik a GFLO_CONTRACTS-hoz, ezt a hookot vissza lehet bővíteni a paths és createUserPath funkciókkal.
+  const createUserPath = async () => {
+    throw new Error('Registry contract not configured. createUserPath is unavailable.')
   }
 
-  // XP lekérdezése
-  const { data: userXP } = useReadContract({
-    address: registryAddress,
-    abi: GFLO_ABIS.registry,
-    functionName: 'getUserXP',
-    args: [address],
-    chainId: GFLO_CHAIN_ID,
-    query: {
-      enabled: !!address
-    }
-  })
-
   return {
-    paths: userPaths || [],
-    xp: userXP ? Number(userXP) : 0,
+    paths: [],
+    xp,
+    tier,
     createUserPath,
-    isCreating,
-    refetchPaths,
-    registryAddress
+    isCreating: false,
+    refetchPaths: async () => {},
+    registryAddress: null
   }
 }
