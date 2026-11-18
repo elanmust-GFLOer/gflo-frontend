@@ -1,13 +1,20 @@
 import { createConfig, http } from 'wagmi'
 import { sepolia } from 'wagmi/chains'
 import { injected } from 'wagmi/connectors'
+import { canonicalAddress } from './canonical-address.js'
 
+// No hard-coded contract addresses. The retired Sepolia v3 contracts (self-mintable XP,
+// stake-based XP, open-mint token) are refused even if an env variable still holds them.
+// Reputation (XP, tier) is NOT read from chain here: it comes from the backend
+// /api/identity endpoint, which reads the canonical PIE v0.2 path and fails closed.
 export const GFLO_CONTRACTS = {
-  token: '0x563b2e3b499818a2f84c472efb3169a2667807fe',
-  pieCore: '0x9CF55d0b9D61Dc28EF3cb10765CF4b861Cd0991e',
-  ignition: '0x414DEDcf9264614Fd087BDa58bE27a0B698CcC54',
-  gasFeeLoop: '0xd2C926F67080D6315b5dbBc7D621d729Cfe8A9C7',
+  token: canonicalAddress(import.meta.env.VITE_GFLO_TOKEN_ADDRESS), // GFLOFixedSupplyV01, once deployed
 }
+
+export const GFLO_BACKEND_URL =
+  import.meta.env.VITE_GFLO_BACKEND_URL ||
+  import.meta.env.VITE_AI_URL ||
+  'https://web-gflo-sov-f4a65.up.railway.app'
 
 export const GFLO_ABIS = {
   token: [
@@ -15,17 +22,6 @@ export const GFLO_ABIS = {
     {"inputs":[],"name":"totalSupply","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
     {"inputs":[{"name":"to","type":"address"},{"name":"amount","type":"uint256"}],"name":"transfer","outputs":[{"name":"","type":"bool"}],"stateMutability":"nonpayable","type":"function"}
   ],
-  pieCore: [
-    {"inputs":[{"name":"user","type":"address"}],"name":"getXP","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-    {"inputs":[{"name":"user","type":"address"}],"name":"getTier","outputs":[{"name":"","type":"uint8"}],"stateMutability":"view","type":"function"},
-    {"inputs":[{"name":"user","type":"address"}],"name":"identities","outputs":[{"name":"xp","type":"uint256"},{"name":"path","type":"uint8"},{"name":"tier","type":"uint8"}],"stateMutability":"view","type":"function"}
-  ],
-  gasFeeLoop: [
-    {"inputs":[{"name":"user","type":"address"}],"name":"getStake","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-    {"inputs":[{"name":"user","type":"address"}],"name":"getAccumulatedXP","outputs":[{"name":"","type":"uint256"}],"stateMutability":"view","type":"function"},
-    {"inputs":[{"name":"amount","type":"uint256"}],"name":"stake","outputs":[],"stateMutability":"nonpayable","type":"function"},
-    {"inputs":[{"name":"amount","type":"uint256"}],"name":"unstake","outputs":[],"stateMutability":"nonpayable","type":"function"}
-  ]
 }
 
 export const gfloWagmiConfig = createConfig({

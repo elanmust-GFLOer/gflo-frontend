@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useAccount, useConnect, useReadContract } from 'wagmi'
 import { GFLO_CONTRACTS, GFLO_ABIS } from '../lib/web3/gflo-web3-config'
+import { useCanonicalIdentity } from '../hooks/useCanonicalIdentity'
 
 export function Dashboard() {
   const { address, isConnected } = useAccount()
@@ -16,34 +17,22 @@ export function Dashboard() {
     }
   }
 
-  const { data: xpRaw } = useReadContract({
-    address: GFLO_CONTRACTS.pieCore,
-    abi: GFLO_ABIS.pieCore,
-    functionName: 'getXP',
-    args: [address],
-    query: { enabled: !!address }
-  })
+  // Reputation comes only from the backend's canonical, fail-closed read path.
+  // The retired v3 PIECore (self-mintable XP) is never read.
+  const rep = useCanonicalIdentity()
 
-  const { data: tierRaw } = useReadContract({
-    address: GFLO_CONTRACTS.pieCore,
-    abi: GFLO_ABIS.pieCore,
-    functionName: 'getTier',
-    args: [address],
-    query: { enabled: !!address }
-  })
-
+  const tokenAddress = GFLO_CONTRACTS.token
   const { data: balanceRaw } = useReadContract({
-    address: GFLO_CONTRACTS.token,
+    address: tokenAddress ?? undefined,
     abi: GFLO_ABIS.token,
     functionName: 'balanceOf',
     args: [address],
-    query: { enabled: !!address }
+    query: { enabled: !!address && !!tokenAddress }
   })
 
-  const xp = xpRaw ? Number(xpRaw) / 1e18 : 0
-  const tier = tierRaw ? Number(tierRaw) : 0
   const balance = balanceRaw ? Number(balanceRaw) / 1e18 : 0
-  const paths = ['—', 'Sovereign', 'Reformer', 'Praxis']
+  const repOk = rep.status === 'ok' && rep.identity.exists
+  const repSub = { loading: 'loading…', unavailable: 'not live yet', error: 'backend error', ok: 'no identity' }[rep.status]
 
   if (!isConnected) return (
     <div style={{minHeight:'100vh',background:'#0a0a0f',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -78,9 +67,9 @@ export function Dashboard() {
 
         <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:'1rem',marginBottom:'1.5rem'}}>
           {[
-            {label:'XP',value:xp.toLocaleString(),color:'#60a5fa',icon:'🧬',sub:'merit'},
-            {label:'Tier',value:`Tier ${tier}`,color:'#a78bfa',icon:'👑',sub:paths[tier]||'—'},
-            {label:'GFLO',value:balance.toFixed(2),color:'#34d399',icon:'🪙',sub:'balance'},
+            {label:'XP',value:repOk ? Number(rep.identity.xp).toLocaleString() : '—',color:'#60a5fa',icon:'🧬',sub:repOk ? 'verified merit' : repSub},
+            {label:'Tier',value:repOk ? `Tier ${rep.identity.effectiveTier}` : '—',color:'#a78bfa',icon:'👑',sub:repOk ? (rep.identity.path || '—') : repSub},
+            {label:'GFLO',value:tokenAddress ? balance.toFixed(2) : '—',color:'#34d399',icon:'🪙',sub:tokenAddress ? 'balance' : 'token not deployed'},
           ].map(c => (
             <div key={c.label} style={{padding:'1.25rem',borderRadius:'1rem',background:'#ffffff06',border:`1px solid ${c.color}22`}}>
               <div style={{display:'flex',justifyContent:'space-between',marginBottom:'0.5rem'}}>
@@ -92,6 +81,12 @@ export function Dashboard() {
             </div>
           ))}
         </div>
+
+        {rep.status === 'unavailable' && (
+          <div role="status" style={{padding:'1rem',borderRadius:'0.75rem',background:'#f59e0b11',border:'1px solid #f59e0b44',color:'#fcd34d',fontSize:'0.85rem',marginBottom:'1.5rem'}}>
+            Verified reputation is not live yet. The old Sepolia v3 XP could be self-minted by anyone, so it is no longer shown.
+          </div>
+        )}
 
         <div style={{textAlign:'center',color:'#4b5563',fontSize:'0.8rem',fontStyle:'italic',paddingTop:'1rem',borderTop:'1px solid #ffffff08'}}>
           "Become who you are." – Nietzsche
