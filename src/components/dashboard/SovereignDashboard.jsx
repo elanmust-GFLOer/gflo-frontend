@@ -52,7 +52,7 @@ function DashboardContent() {
             <p className="text-gray-300 mb-4">{philosophy.sovereignLogic.principle}</p>
             <div className="p-3 bg-black/40 rounded-lg">
               <p className="text-sm text-blue-300">Active UserPaths: {paths.length}</p>
-              <p className="text-2xl font-bold text-white mt-2">{xp.toLocaleString()} XP</p>
+              <p className="text-2xl font-bold text-white mt-2">{xp === null ? '—' : `${xp.toLocaleString()} XP`}</p>
             </div>
           </div>
 

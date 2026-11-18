@@ -3,34 +3,37 @@ import { GFLO_CONTRACTS, GFLO_ABIS, GFLO_CHAIN_ID } from '../lib/web3/gflo-web3-
 
 export function useGFLOToken() {
   const { address } = useAccount()
-  const tokenAddress = GFLO_CONTRACTS.token
+  const tokenAddress = GFLO_CONTRACTS.token // null unless a canonical token is configured
 
   // Token egyenleg
   const { data: balance, refetch: refetchBalance } = useReadContract({
-    address: tokenAddress,
+    address: tokenAddress ?? undefined,
     abi: GFLO_ABIS.token,
     functionName: 'balanceOf',
     args: [address],
     chainId: GFLO_CHAIN_ID,
     query: {
-      enabled: !!address
+      enabled: !!address && !!tokenAddress
     }
   })
 
   // Összes kínálat
   const { data: totalSupply } = useReadContract({
-    address: tokenAddress,
+    address: tokenAddress ?? undefined,
     abi: GFLO_ABIS.token,
     functionName: 'totalSupply',
-    chainId: GFLO_CHAIN_ID
+    chainId: GFLO_CHAIN_ID,
+    query: { enabled: !!tokenAddress }
   })
 
   // Tranzakció
   const { writeContract: transfer, isPending: isTransferring } = useWriteContract()
 
   const transferTokens = async (to, amount) => {
+    // No canonical token configured (the old MockGFLOToken is refused): never send.
+    if (!tokenAddress) throw new Error('GFLO token is not deployed yet.')
     return transfer({
-      address: tokenAddress,
+      address: tokenAddress ?? undefined,
       abi: GFLO_ABIS.token,
       functionName: 'transfer',
       args: [to, BigInt(amount * 1e18)],

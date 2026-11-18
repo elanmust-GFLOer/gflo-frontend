@@ -1,10 +1,15 @@
-name: NodeJS with Webpack
+name: Frontend build and tests (Vite)
 
+# The project builds with Vite, not webpack. The previous template ran `npx webpack`,
+# which stalls on an interactive webpack-cli prompt and always failed.
 on:
   push:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -12,7 +17,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
+        node-version: [20.x, 22.x] # Vite 7 requires Node >= 20.19
 
     steps:
     - uses: actions/checkout@v4
@@ -22,7 +27,11 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
 
+    - name: Install
+      run: npm ci --ignore-scripts --no-audit --no-fund
+
+    - name: Unit tests
+      run: npm test
+
     - name: Build
-      run: |
-        npm install
-        npx webpack
+      run: npm run build
